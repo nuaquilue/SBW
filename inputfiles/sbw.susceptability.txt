@@ -1,0 +1,12 @@
+spp	age.class	class
+BOJ	Y	none
+BOJ	M	none
+BOJ	O	none
+EPN	Y	low
+EPN	M	moderate
+EPN	O	moderate
+
+ERS	50000	1	1
+PET	75000	1	1
+SAB	50000	1	1
+OTH.FEU.N

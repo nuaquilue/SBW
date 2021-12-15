@@ -4,6 +4,7 @@ default.params = function(){
   ## Time lenght in years of a model simulation
   ## 80 time steps of 1 years, it covers the period 2020-2100.
   year.ini = 2020,
+  time.step = 1,
   
   ## SPRUCE BUDWORM parameters:  
   duration.last.outbreak = 9,

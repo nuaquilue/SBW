@@ -22,7 +22,7 @@
  # land <- land[, c("cell.indx", "SppGrp", "x", "y","TSD","Tcomp")]
  # target.cells <- land[land$cell.id %in% burnt.cells, c("cell.indx", "x", "y")]
 
-buffer.mig4 <- function(land, target.cells.mig, spp.colonize.persist){
+buffer.mig <- function(land, target.cells.mig, spp.colonize.persist){
   
   ## Coordinates of the target cells
   target.cells.mig.xy <- land[land$cell.id %in% target.cells.mig, c("cell.id", "x", "y")]
@@ -71,7 +71,7 @@ buffer.mig4 <- function(land, target.cells.mig, spp.colonize.persist){
   target.df <- data.frame(target.cells.mig.xy, PET=nn.dists.pet, BOJ=nn.dists.boj, ERS=nn.dists.ers, 
                           SAB=nn.dists.sab, EPN=nn.dists.epn, OTH=TRUE, NonFor=TRUE)
   target.df <- target.df[,-c(2,3)]  
-  target.df <- melt(target.df,id=c("cell.id"))
+  target.df <- reshape::melt(target.df,id=c("cell.id"))
   names(target.df)[-1] <- c("potential.spp", "press.buffer")
   target.df$potential.spp <- as.character(target.df$potential.spp)
   return(target.df)

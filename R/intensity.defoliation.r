@@ -1,4 +1,4 @@
-intensity.defoliation <- function(outbreak, niche.opt, niche.good, niche.poor){
+intensity.defoliation <- function(outbreak, params){
   
   options(warn=-1)  
   
@@ -17,9 +17,9 @@ intensity.defoliation <- function(outbreak, niche.opt, niche.good, niche.poor){
   suboptimal <- 0.5
   list.spp <- levels(outbreak$spp)
   list.spp <- list.spp[list.spp!="NonFor"]
-  temp.suitability <- read.table("inputfiles/ThMeanTemp.txt", header=T)  
-  prec.suitability <- read.table("inputfiles/ThAnnualPrecip.txt", header=T)  
-  soil.suitability <- read.table("inputfiles/ThSoil.txt", header=T)  
+  load("data/temp.suitability.rda")
+  load("data/prec.suitability.rda")
+  load("data/soil.suitability.rda")
   dta <- data.frame(cell.id=NA, spp=NA, site.qual=NA)
   for(ispp in list.spp){
     th.temp <- filter(temp.suitability, spp==ispp)[-1]
@@ -46,8 +46,8 @@ intensity.defoliation <- function(outbreak, niche.opt, niche.good, niche.poor){
   ## Time to include the effect of SBW climatic niche in determining defoliation intensity
   ## The reduction of the Likelihood of severe defoliation  according to sbw.niche should be a model parameter
   ## By now I use the value MB used to calculate probability of mortality, but's totally arbitrary.
-  outbreak$sbw.niche <- ifelse(outbreak$temp>0.5 & outbreak$temp<2.8, niche.opt,
-                               ifelse(outbreak$temp>-1.5 & outbreak$temp<4, niche.good, niche.poor))
+  outbreak$sbw.niche <- ifelse(outbreak$temp>0.5 & outbreak$temp<2.8, params$niche.opt,
+                               ifelse(outbreak$temp>-1.5 & outbreak$temp<4, params$niche.good, params$niche.poor))
   
   
   ## Level of defoliation will be higher as host.pref is higher, and higher as site.qual is lower

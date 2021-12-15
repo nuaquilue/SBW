@@ -3,6 +3,21 @@ library(sp)
 library(raster)
 library(tidyverse)
 
+### TABLES
+input.path = "C:/WORK/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputfiles/"
+post.sbw.reg = read.table(paste0(input.path, "PostSBWRege.txt"), header=T)
+save(post.sbw.reg, file = "data/post.sbw.reg.rda")
+forest.succ = read.table(paste0(input.path,"ForestSucc.txt"), header=T)
+save(forest.succ, file = "data/forest.succ.rda")
+spp.colonize.persist = read.table(paste0(input.path,"SppColonizePersist.txt"), header=T)
+save(spp.colonize.persist, file = "data/spp.colonize.persist.rda")
+temp.suitability = read.table(paste0(input.path,"ThMeanTemp.txt"), header=T)  
+save(temp.suitability, file = "data/temp.suitability.rda")
+prec.suitability = read.table(paste0(input.path,"ThAnnualPrecip.txt"), header=T)  
+save(prec.suitability, file = "data/prec.suitability.rda")
+soil.suitability = read.table(paste0(input.path,"ThSoil.txt"), header=T)  
+save(soil.suitability, file = "data/soil.suitability.rda")
+
 ## HOST SUITABILITY MAP
 load(file="inputlyrs/rdata/land.rdata")
 breaks <- c(0,20,40,60,80,100,999)

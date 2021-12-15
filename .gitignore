@@ -2,3 +2,4 @@
 .Rhistory
 outputs/
 mdl/old
+*.xlsx

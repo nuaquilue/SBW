@@ -25,6 +25,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
   load("data/soil.suitability.rda")
   load("data/spp.colonize.persist.rda")
   load("data/post.sbw.reg.rda")
+  load("data/forest.succ.rda")
   
   ## Initializations and verifications  --------------------------------------------------------------------
   cat("Data preparation ...\n") 
@@ -141,7 +142,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
     for(t in time.seq){
       
       ## Track scenario, replicate and time step
-      print(paste0("Replicate ", irun, "/", nrun, ". Time step: ", params$year.ini+t, "/", params$year.ini+time.horizon, "\n"))
+      cat(paste0("Replicate ", irun, "/", nrun, ". Time step: ", params$year.ini+t, "/", params$year.ini+time.horizon), "\n")
       
       ## Reiniziale vector of killed cells every time step
       kill.cells = integer()
@@ -187,7 +188,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
           sample(0:3, size=length(sbw.new.sprd), replace=T, prob=c(0.2,0.4,0.3,0.1))
         # add some neighs of these epicenters
         sbw.new.sprd = c(sbw.new.sprd, 
-            sbw.spread.tonew(land, nc=ncol(MASK), side=res(MASK)[1]/10^3, 
+            spread.tonew(land, nc=ncol(MASK), side=res(MASK)[1]/10^3, 
                              radius=12, outbreak, preoutbreak))
         # and finally assign intensity to all of them (rewrite intensity just assigned to epicenter cores)
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
@@ -197,7 +198,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
         cat("epidemic phase: ", "\n")
         ## 1. Spatial spreading of the current outbreak to cells not yet defoliated, that is,
         ## cells with ny.def0>=5 & tssbw>=30
-        ## The function 'sbw.spread.tonew' returns cell.ids.
+        ## The function 'spread.tonew' returns cell.ids.
         ## once in a while vary the radius, to allow spreading furhter away, or reduce it to limit outbreak....
         radius = rdunif(1,2,15) # 4 to 60 km
         sbw.new.sprd = spread.tonew(land, nc=ncol(mask), side=res(mask)[1]/10^3, 
@@ -235,7 +236,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
       curr.outbreak = filter(land, cell.id %in% sbw.curr.sprd)
       ## Level of defoliation of these cells. It can be 0 (no-defol), 1, 2 or 3!
       land$curr.intens.def[land$cell.id %in% sbw.curr.sprd] = 
-        intens.def.curr(filter(land, cell.id %in% sbw.curr.sprd), params, outbreak, collapse, calm)
+        intens.def.curr(filter(land, cell.id %in% sbw.curr.sprd), params, preoutbreak, outbreak, collapse, calm)
       ## Update SBW tracking variables
       land$ny.def[land$cell.id %in% sbw.curr.sprd] = land$ny.def[land$cell.id %in% sbw.curr.sprd]+
         ifelse(land$curr.intens.def[land$cell.id %in% sbw.curr.sprd]==0, 0, 1)
@@ -322,7 +323,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
       }
       else
         track.sbw.defol.intens = rbind(track.sbw.defol.intens, 
-        data.frame(run=irun, year=t+year.ini, phase=phase, curr.intens.def=0, ncell=nrow(land), pct=NA))
+        data.frame(run=irun, year=t+params$year.ini, phase=phase, curr.intens.def=0, ncell=nrow(land), pct=NA))
       
       
 

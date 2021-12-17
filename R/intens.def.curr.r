@@ -1,5 +1,5 @@
 
-intens.def.curr <- function(curr.outbreak, params, outbreak, collapse, calm){
+intens.def.curr <- function(curr.outbreak, params, preoutbreak, outbreak, collapse, calm){
   
   `%notin%` <- Negate(`%in%`)
   

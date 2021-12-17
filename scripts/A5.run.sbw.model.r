@@ -15,13 +15,10 @@ save.land = FALSE
 out.seq = NA
 out.path = NA
 
-
 ## Decide (top-down) duration of the current outbreak
 outbreak.duration <- rdunif(1, -1,2)+6+duration.last.outbreak
 done <- T
 t <- 1; sbw.schedule <- seq(1,80,1)
-
-
 
 
 ############################################ RUN sbw.outbreak() ##################################################

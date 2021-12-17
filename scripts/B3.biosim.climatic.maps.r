@@ -1,14 +1,24 @@
+##########################################################################################
+## 
+##  Function that reads BioSim outputs containing monthly climatic projections
+##  for the study area of 7 variables: min temp, max temp, mean temp, accum precip
+##  mean wind speed, max wind speed, and degree days 5ºC.
+##  For each year and variable a raster brick is built and saved as a .rds file
+##
+##########################################################################################
+
+rm(list=ls())
 library(sf)
 library(sp)
 library(raster)
 library(rasterVis)
 library(tidyverse)
+options(dplyr.summarise.inform=F)
+select = dplyr::select
 
-year=2017; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
-biosim.maps(year, export.file, path)
-var = clim.vars[6]; month = 1
 
-biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", path="D:/OneDrive - ctfc.cat/QBCMOD/"){
+biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", 
+                       path="D:/OneDrive - ctfc.cat/QBCMOD/"){
   
   ## Locations
   loc = read.csv(paste0(path, "BioSIM/Quebec/Loc/Specific Locations Mask022d.csv"))
@@ -31,8 +41,8 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", path="D:/
   }
   
   ## Raster map of the study area, Quebec province 
-  load(paste0(path, "SBW/inputlyrs/rdata/mask.rdata"))  
-  #crs(MASK)  # --> unfortunatelly, this projection is not supported by EPSG, 
+  load(paste0(path, "SBW/data/mask.rda"))  
+  # crs(mask)  # --> unfortunatelly, this projection is not supported by EPSG, 
   # neither the projections of the fire regime zones map
   
   ## For each variable and month... build maps?
@@ -45,8 +55,9 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", path="D:/
                                      ifelse(var=="Total.Precipitation", "prec",
                                             ifelse(var=="Wind.Speed.at.10.meters", "wind", 
                                                    ifelse(var=="Wind.Speed.at.10.meters.Highest", "windmx", "dday"))))))
+    cat(paste0("Build raster brick for ", var), "\n")
     for(month in 1:12){
-      cat(paste0(var, " ", month, "/", year), "\n")
+      cat(paste0("  ", month, "/", year), "\n")
       aux = dta %>% filter(Year==year, Month==month) %>% select(KeyID, all_of(var))
       df_clim = loc %>% select(KeyID, Latitude, Longitude) %>% left_join(aux, by="KeyID")
       # Instead of :
@@ -57,10 +68,9 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", path="D:/
       spdf_clim = st_as_sf(df_clim, coords = c("Longitude", "Latitude"))
       st_crs(spdf_clim) = 4326
       
-      # Transform to Lambert Conformal Conic and rasterize using MASK as raster of reference
-      spdf_clim_lcc = st_transform(spdf_clim, crs = crs(MASK))  #
-      raster_clim = rasterize(spdf_clim_lcc, MASK, field=var)
-      raster_clim
+      # Transform to Lambert Conformal Conic and rasterize using mask as the raster of reference
+      spdf_clim_lcc = st_transform(spdf_clim, crs = crs(mask))  
+      raster_clim = rasterize(spdf_clim_lcc, mask, field=var)
       
       ## Build a RasterBrick for each variable, with one raster per month
       if(is.null(brick_clim)){
@@ -81,15 +91,21 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)", path="D:/
     dev.off()
   }
   
-  #
 }
 
 
+############ Run the biosim.map function for a single year ############
+year=2016; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
+for(year in 1997:2015)
+  biosim.maps(year, export.file, path)
 
-############ To restructurate some BioSIM outputs files
+
+############ To restructurate some BioSIM outputs files ############
 year=2020; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
 prec = read.csv(paste0(path, "BioSIM/Quebec/Output/DegreeDay5.csv"))
 aux = group_by(prec, KeyID, Year, Month) %>% summarise(x=sum(Wind.Speed.at.10.meters.Highest.))
 names(aux)[4] = "Wind.Speed.at.10.meters.Highest"
 write.csv(aux, paste0(path, "BioSIM/Quebec/Output/Export (Analysis) max 2021.csv"), quote=F, row.names=F)
 #KeyID,Year,Month,Total Precipitation(Sum)
+
+

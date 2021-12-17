@@ -18,13 +18,8 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
   source("R/suitability.r") 
   
   ## Load model data (no need in a R-package)
-  load(file="data/mask.rdata")      # Raster mask of the study area
-  mask = MASK
-  rm(MASK)
-  load(file="data/land.sbw.rdata")  # Forest and sbw outbreak data
-  land$temp = land$temp/10 # Temperature in 'land' is x 10, but not in the climatic projections
-  landscape = select(land, -tsfire, -tsccut, - tspcut)
-  rm(land)
+  load(file="data/mask.rda")      # Raster mask of the study area
+  load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
   load("data/temp.suitability.rda")
   load("data/prec.suitability.rda")
   load("data/soil.suitability.rda")
@@ -211,7 +206,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
         ## It can be 0 (no-defol), 1, 2 or 3!
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
           sample(0:2, size=length(sbw.new.sprd), replace=T, prob=c(0.1,0.8,0.1))
-        cat("hi1", "\n")
+        cat("hi.1", "\n")
       }
       else if(calm>0 | collapse==1){ 
         cat("calm phase: ", "\n")

@@ -1,3 +1,10 @@
+##########################################################################################
+## 
+##  Generation of data for SBW model: tables, raster of the study area, and completed
+##  'land' data.frame
+##
+##########################################################################################
+
 rm(list=ls())
 library(sp)
 library(rgdal)
@@ -70,42 +77,6 @@ table(sbw.intens.y$year, sbw.intens.y$intensity)
 ## 
 sbw.intens.y <- select(sbw.intens.y, year, cell.id, intensity)
 save(sbw.intens.y, file="C:/work/qbcmod/DataOut/SBW.intens.y.mask.rdata")
-
-
-## Now compute the accumulated intensity of defoliation, the number of years since the first defoliation,
-## and the number of years without defoliation to reset defoliation once it is greater or equal than 5
-rm(list=ls())
-load(file="inputlyrs/rdata/land.rdata")
-load(file="C:/work/qbcmod/DataOut/SBW.intens.y.mask.rdata")
-land$ny.def <- 0 
-land$ny.def0 <- 0
-land$cum.intens.def <- 0
-for(y in 1992:2020){
-  defol.y <- filter(sbw.intens.y, year==y)
-  # get the information about defoliation for the target year       
-  land <- left_join(land, defol.y, by="cell.id")  
-  # Increment number of years of defoliation whenever current intensity is >0
-  land$ny.def[!is.na(land$intensity)] <- land$ny.def[!is.na(land$intensity)]+1
-  # Mark that the number of years without defoliation is 0 too
-  land$ny.def0[!is.na(land$intensity)] <-  0
-  # Increment number of years of NO defoliation whenever intensity is NA
-  land$ny.def0[is.na(land$intensity)] <- land$ny.def0[is.na(land$intensity)]+1
-  # Reset number of years since defoliation to 0 when there is no defoliation in the current year
-  # and in the 4 preceding years
-  land$ny.def[is.na(land$intensity) & land$ny.def0>=5] <- 0
-  # Increment cumulative intensity whenever current intensity is >0
-  land$cum.intens.def[!is.na(land$intensity)] <- land$cum.intens.def[!is.na(land$intensity)]+land$intensity[!is.na(land$intensity)]
-  # Reset cumulative intenstiy when there is no defoliation in the current year
-  # and in the 4 preceding years
-  land$cum.intens.def[is.na(land$intensity) & land$ny.def0>=5] <- 0
-  land <- select(land, -intensity, -year)
-}
-## current level of defoliation
-land <- left_join(land, defol.y, by="cell.id")  
-land$curr.intens.def[!is.na(land$intensity)] <- land$intensity[!is.na(land$intensity)]
-land$curr.intens.def[is.na(land$intensity)] <- 0
-land <- select(land, -intensity, -year)
-save(land, file="inputlyrs/rdata/land.sbw.rdata")
 
 
 

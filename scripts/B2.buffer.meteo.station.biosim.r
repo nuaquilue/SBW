@@ -1,3 +1,11 @@
+##########################################################################################
+## 
+##  Function that reads BioSim Normal or Daily meteorological stations data
+##  It builds a buffer around the meteorological stations to visualize the 
+##  coverage of the data within the Quebec province
+##
+##########################################################################################
+
 rm(list=ls())
 library(sp)
 library(rgdal)
@@ -25,8 +33,6 @@ buffer_metostat = function(weather="NormalWeather", site="Canada-USA", period="1
   plot(sp_meteo, col="blue", pch=19, cex=0.5)
   writeOGR(sp_meteo, dsn = paste0(path, "BioSim/MeteoStations"), layer=paste0(site,"_",period), driver="ESRI Shapefile", overwrite_layer=TRUE)
   
-
-
   ## Cartographic projection of layers to Lambert Conical Conforme
   zones = readOGR("C:/WORK/onedrive - ctfc.cat/QBCMOD/DataIn/ZonageFeux/2020.11.27/zones_nuria2.shp")
   raster::crs(zones)

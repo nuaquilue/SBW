@@ -1,5 +1,6 @@
 sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj = NA,  
-                        time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA){
+                        time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, 
+                        out.path = NA, ...){
   
   options(dplyr.summarise.inform=F)
   select = dplyr::select
@@ -8,24 +9,22 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
   source("R/buffer.mig.r") 
   source("R/default.params.r") 
   source("R/forest.mortality.r") 
-  source("R/forest.transitions.r")
+  source("R/forest.transition.r")
   source("R/intens.def.curr.r")  
   source("R/intensity.defoliation.r")  
   source("R/neigh.influence.sbw.spread.r")
-  source("R/neighbour.spp.r")
-  source("R/select.others.r")
   source("R/spread.tonew.r")
   source("R/suitability.r") 
   
   ## Load model data (no need in a R-package)
   load(file="data/mask.rda")      # Raster mask of the study area
   load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
-  load("data/temp.suitability.rda")
-  load("data/prec.suitability.rda")
-  load("data/soil.suitability.rda")
-  load("data/spp.colonize.persist.rda")
-  load("data/post.sbw.reg.rda")
-  load("data/forest.succ.rda")
+  load(file="data/temp.suitability.rda")
+  load(file="data/prec.suitability.rda")
+  load(file="data/soil.suitability.rda")
+  load(file="data/spp.colonize.persist.rda")
+  load(file="data/post.sbw.reg.rda")
+  load(file="data/forest.succ.rda")
   
   ## Initializations and verifications  --------------------------------------------------------------------
   cat("Data preparation ...\n") 
@@ -46,7 +45,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
     ## Check that the names of the customized parameters are correct
     if(!all(names(custom.params) %in% names(params)))
       stop("Wrong custom parameters names")
-    params <- custom.param
+    params = custom.param
   }
   
   ## Set the directory for writing spatial outputs (if indicated) 
@@ -171,7 +170,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
       ## 1. Defliation in the different phases of the SBW outbreak
       cat("Defoliation in the ")
       if(preoutbreak>0){
-        cat("pre-epidemic phase: ", "\n")
+        cat("pre-epidemic phase ", "\n")
         potential = filter(land, ny.def0>=5, tssbw>=30, temp>0.5, temp<2.8)
         # preoutbreak=5
         sbw.new.sprd = sample(potential$cell.id, size=rdunif(1,1,6-preoutbreak), replace=F,
@@ -195,8 +194,8 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
           sample(0:3, size=length(sbw.new.sprd), replace=T, prob=c(0.2,0.4,0.3,0.1))
       }
       else if(outbreak>0){
-        cat("epidemic phase: ", "\n")
-        ## 1. Spatial spreading of the current outbreak to cells not yet defoliated, that is,
+        cat("epidemic phase ", "\n")
+        ## Spatial spreading of the current outbreak to cells not yet defoliated, that is,
         ## cells with ny.def0>=5 & tssbw>=30
         ## The function 'spread.tonew' returns cell.ids.
         ## once in a while vary the radius, to allow spreading furhter away, or reduce it to limit outbreak....
@@ -207,10 +206,9 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
         ## It can be 0 (no-defol), 1, 2 or 3!
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
           sample(0:2, size=length(sbw.new.sprd), replace=T, prob=c(0.1,0.8,0.1))
-        cat("hi.1", "\n")
       }
       else if(calm>0 | collapse==1){ 
-        cat("calm phase: ", "\n")
+        cat("calm phase ", "\n")
         ## not add new locations to the current outbreak if it is collapsing
         ## when calm, few spontaneously cells will have to be here and there defoliated
         potential = filter(land, ny.def0>=5, tssbw>=30, spp %in% c("SAB", "EPN"), temp>0.5, temp<2.8)
@@ -321,10 +319,10 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
         data.frame(run=irun, year=t+params$year.ini, phase=phase, group_by(land, curr.intens.def) %>% 
                    summarize(ncell=length(cell.id)) %>% mutate(pct=ncell/ncell.def)))
       }
-      else
+      else{
         track.sbw.defol.intens = rbind(track.sbw.defol.intens, 
         data.frame(run=irun, year=t+params$year.ini, phase=phase, curr.intens.def=0, ncell=nrow(land), pct=NA))
-      
+      }
       
 
       ## Natural regeneration of forest after disturbance depends on the nature of the disturbance, 
@@ -332,28 +330,25 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
       ## according to climate and soils.   
       if(params$enable.succ){  
         
-        cat("Forest regeneration and succesion: ", "\n")
-        
         ## First, save a vector containing initial forest composition for comparison
         initial.forest.comp = land$spp
         
         ## Environmental suitability:
-        suitab = suitability(land, temp.suitability, prec.suitability, soil.suitability, params$suboptimal)
+        suitab = suitability(land, params)
 
         ## Regeneration after sbw outbreak
         if(length(kill.cells)>0){
-          buffer = buffer.mig(land, kill.cells, spp.colonize.persist)
-          land$spp[land$cell.id %in% kill.cells] = forest.trans(land, kill.cells, post.sbw.reg, buffer, 
-                     suitab, spp.colonize.persist, dtype="O", params$p.failure, params$age.seed, params$suboptimal, params$enfeuil)
+          buffer = buffer.mig(land, kill.cells)
+          land$spp[land$cell.id %in% kill.cells] = 
+            forest.transition(land, kill.cells, suitab, params, type.trans="O")
         }
 
         ## Natural succession of tree spp at every 40 years starting at Tcomp = 70
         chg.comp.cells = filter(land, (age-age.matu) %in% seq(40,400,40) & tscomp>=70) %>% select(cell.id)
         if(length(unlist(chg.comp.cells))>0){
-          buffer = buffer.mig(land, unlist(chg.comp.cells), spp.colonize.persist)
+          buffer = buffer.mig(land, unlist(chg.comp.cells))
           land$spp[land$cell.id %in% unlist(chg.comp.cells)] = 
-            forest.trans(land, unlist(chg.comp.cells), forest.succ, buffer, suitab, 
-                         spp.colonize.persist, dtype="S", params$p.failure, params$age.seed, params$suboptimal, params$enfeuil)
+            forest.transition(land, unlist(chg.comp.cells), suitab, params, type.trans="S")
         }
         
         ## For each cell that has changed composition (because of natural succession or regeneration of

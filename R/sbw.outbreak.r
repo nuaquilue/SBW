@@ -1,4 +1,4 @@
-sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj = NA,  
+sbw.outbreak = function(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                         time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, 
                         out.path = NA, ...){
   
@@ -26,6 +26,8 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
   load(file="data/post.sbw.reg.rda")
   load(file="data/forest.succ.rda")
   
+  # cat(sum(soil.suitability[soil.suitability$spp=="SAB",2:6]), "\n")
+  
   ## Initializations and verifications  --------------------------------------------------------------------
   cat("Data preparation ...\n") 
   
@@ -37,15 +39,15 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
 
   ## Get the list of default parameters and update user-initialized parameters
   params = default.params()
-  if(!is.na(custom.params)){
+  if(!is.null(custom.params)){
     # Check class of custom.params
-    if((!inherits(customParams, "list"))) {
+    if((!inherits(custom.params, "list"))) {
       stop("'custom.params' must be a named list")
     }
     ## Check that the names of the customized parameters are correct
     if(!all(names(custom.params) %in% names(params)))
       stop("Wrong custom parameters names")
-    params = custom.param
+    params = custom.params
   }
   
   ## Set the directory for writing spatial outputs (if indicated) 
@@ -187,8 +189,9 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
           sample(0:3, size=length(sbw.new.sprd), replace=T, prob=c(0.2,0.4,0.3,0.1))
         # add some neighs of these epicenters
         sbw.new.sprd = c(sbw.new.sprd, 
-            spread.tonew(land, nc=ncol(MASK), side=res(MASK)[1]/10^3, 
+            spread.tonew(land, nc=ncol(mask), side=res(mask)[1]/10^3, 
                              radius=12, outbreak, preoutbreak))
+        sbw.new.sprd = unique(sbw.new.sprd)
         # and finally assign intensity to all of them (rewrite intensity just assigned to epicenter cores)
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
           sample(0:3, size=length(sbw.new.sprd), replace=T, prob=c(0.2,0.4,0.3,0.1))
@@ -202,6 +205,7 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
         radius = rdunif(1,2,15) # 4 to 60 km
         sbw.new.sprd = spread.tonew(land, nc=ncol(mask), side=res(mask)[1]/10^3, 
                                          radius=radius, outbreak, preoutbreak)
+        sbw.new.sprd = unique(sbw.new.sprd)
         ## Level of defoliation of the cells recently integrated in the outbreak (the sbw.new.spread cells)
         ## It can be 0 (no-defol), 1, 2 or 3!
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
@@ -266,10 +270,12 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
       ## with probability as cumulative*current intensity of defoliation
       if(outbreak>0 | collapse>0){
         kill.cells = forest.mortality(land)
-        aux = filter(land, cell.id %in% kill.cells) %>% group_by(spp, ny.def, curr.intens.def) %>% 
-          summarise(area=length(spp)*km2.pixel) 
-        names(aux) = c("spp", "ny.def", "curr.intens.def", "area")
-        track.sbw.kill = rbind(track.sbw.kill, data.frame(run=irun, year=t+params$year.ini, aux))
+        if(length(kill.cells)>0){
+          aux = filter(land, cell.id %in% kill.cells) %>% group_by(spp, ny.def, curr.intens.def) %>% 
+                summarise(area=length(spp)*km2.pixel) 
+          names(aux) = c("spp", "ny.def", "curr.intens.def", "area")
+          track.sbw.kill = rbind(track.sbw.kill, data.frame(run=irun, year=t+params$year.ini, aux))  
+        }
         ## Mark the killed cells, and reset SBW variables. SBW won't spread to recently killed cells (tssbw<30)
         land$tssbw[land$cell.id %in% kill.cells] = 0
         land$ny.def[land$cell.id %in% kill.cells] = 0
@@ -365,9 +371,9 @@ sbw.outbreak = function(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj 
 
       ## If required, save landscape data frame at each time step 
       if(save.land & t %in% out.seq){
-        if(!file.exists(out.path))
+        if(!dir.exists(out.path))
           dir.create(file.path(out.path), showWarnings = T) 
-        saveRDS(land, file=paste0(out.path, "landscape_", irun, "t", t, ".rds"))
+        saveRDS(land, file=paste0(out.path, "/landscape_", irun, "t", t, ".rds"))
       }
 
     } # t

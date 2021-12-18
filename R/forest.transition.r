@@ -126,13 +126,14 @@ forest.transition = function(land, target.cells, suitab, params, type.trans = "S
   new.spp[id.spp!=0] = spp.names[id.spp[id.spp!=0]]
   new.spp[id.spp==0] = as.character(current.spp[id.spp==0])
   # pour les cellules deja dominées par other, revenir à la même chose
-  new.spp[new.spp %in% c("OTH") & current.spp %in% c("OTH.RES.N","OTH.RES.S","OTH.FEU.N","OTH.FEU.S")] = 
-   current.spp[new.spp %in% c("OTH") & current.spp %in% c("OTH.RES.N","OTH.RES.S","OTH.FEU.N","OTH.FEU.S")]   
-  new.spp[new.spp=="OTH"] = .select.others(land, unique(subland$cell.id)[new.spp=="OTH"])
+  new.spp[new.spp=="OTH" & current.spp %in% c("OTH.RES.N","OTH.RES.S","OTH.FEU.N","OTH.FEU.S")] = 
+   current.spp[new.spp=="OTH" & current.spp %in% c("OTH.RES.N","OTH.RES.S","OTH.FEU.N","OTH.FEU.S")]   
+  if(any(new.spp=="OTH")){
+    new.spp[new.spp=="OTH"] = .select.others(land, unique(subland$cell.id)[new.spp=="OTH"])
+  }
   
   ## Return the vector with the name of the new spp
   return(new.spp)
-
 }
 
 

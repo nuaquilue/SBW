@@ -28,9 +28,26 @@ library(raster)
 library(RANN)
 library(tidyverse)
 source("R/sbw.outbreak.r")  
-r = sbw.outbreak(custom.params = NA, rcp = NA, prec.proj = NA, temp.proj = NA,  
+r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
-# custom.params = default.params()
-# custom.params$collapse = 1
-# custom.params$year.ini = 1990
+## Saving outputs
+r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 2, nrun = 1, save.land = TRUE, out.seq = NA, 
+                 out.path = "outputs/algo") 
+
+## Changing default parameters of the list
+source("R/default.params.r")  
+custom.params = default.params()
+custom.params$year.ini = 1990
+r = sbw.outbreak(custom.params = custom.params, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 1, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
+
+## Changing values of a parameters table, eg. soil.suitability of SAB
+load("data/soil.suitability.rda")
+soil.suitability[soil.suitability$spp=="SAB",2:6] = 0
+soil.suitability
+r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 10, nrun = 1, save.land = FALSE, out.seq = NA, 
+                 out.path = NA, soil.suitability) 
+

@@ -12,7 +12,7 @@ options(dplyr.summarise.inform=F)
 select = dplyr::select
 
 ## Latitude - Longitude - Elevation table for BioSIM, saved as .csv file 
-ELEV <- raster(paste0(dirname(getwd()), "/DataIn/Elevation/elev_QC3.grd"))
+ELEV = raster(paste0(dirname(getwd()), "/DataIn/Elevation/elev_QC3.grd"))
 data = data.frame(Name=paste0("cell_", 1:ncell(ELEV)), Latitude=coordinates(ELEV)[,2],
                   Longitude=coordinates(ELEV)[,1], Elevation=ELEV[], State="Quebec", Country="Canada")
 data = data %>% filter(!is.na(Elevation)) # 3.275.127 to 2.074.993
@@ -30,7 +30,7 @@ write.csv(data, paste0(dirname(getwd()), "/BioSIM/Quebec/Loc/Specific Locations 
           quote=F, row.names=F)
 
 ## Crop Elevation map by the study area 
-zones <- readOGR(paste0(dirname(getwd()), "/DataIn/ZonageFeux/2020.11.27/zones_nuria2.shp"))
+zones = readOGR(paste0(dirname(getwd()), "/DataIn/ZonageFeux/2020.11.27/zones_nuria2.shp"))
 zones_latlon = spTransform(zones,raster::crs(ELEV))
 plot(zones_latlon)
 ZONES = rasterize(zones_latlon, ELEV2)

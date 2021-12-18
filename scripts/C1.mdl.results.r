@@ -57,9 +57,51 @@ defol.intens.phase = function(scn.name){
 }
 
 
+############ Function to plot age class distribution per species over time ############
+scn.name = "test0"
+area.defol = function(scn.name){
+  
+  ## Read model data
+  sbw.defol.intens = read.table(paste0("outputs/", scn.name, "/SBWdefoliation.txt"), header=T)
+  
+  ## Number of years per phase
+  group_by(sbw.defol.intens, phase) %>% summarise(ny=length(unique(year)))
+  
+  ## Amount of area defoliated
+  tot.predict = filter(sbw.defol.intens, curr.intens.def>0) %>% group_by(year) %>% summarise(ncell=sum(ncell))
+  tot.predict = rbind(tot, tot.predict)
+  tot.predict$area = tot.predict$ncell*4/10^3
+  none = filter(sbw.defol.intens, curr.intens.def==0, phase=="collapse", ncell==147464) %>% dplyr::select(year, ncell)
+  if(nrow(none)>0){
+    none$ncell = none$area = 0
+    tot.predict = rbind(tot.predict, none)
+  }
+  # ggplot(tot.predict, aes(x=year, y=log(area))) + geom_line() + 
+  #   geom_point() +  theme_classic() + geom_vline(xintercept=2020, color="grey60")
+  p1 = ggplot(tot.predict, aes(x=year, y=area)) + geom_line() + 
+    geom_point() +  theme_classic() + geom_vline(xintercept=2020, color="grey60")
+  ggsave(p1, filename = paste0(dirname(getwd()), "/DataOutSBW/mdl.outs/annual.area.defol_", scn.name, ".png"),
+         width = 8, height = 6)
+  
+  ## Percentage of each level of defoliation 
+  intens.predict = filter(sbw.defol.intens, curr.intens.def>0) %>% select(year, curr.intens.def, ncell, pct)
+  names(intens.predict) = c("year", "intens", "ncell", "freq")
+  intens.predict = rbind(dta.intens, intens.predict)
+  p2 = ggplot(intens.predict, aes(x=year, y=freq, group=as.factor(intens))) +
+    geom_line(aes(colour=as.factor(intens))) + geom_point(aes(color=as.factor(intens))) +
+    scale_color_manual(values=c("yellowgreen", "orange", "darkred")) + theme_classic() +
+    theme(legend.position = "none") + geom_vline(xintercept=2020, color="grey60")
+  ggsave(p2, filename = paste0(dirname(getwd()), "/DataOutSBW/mdl.outs/annual.pct.intens.defol_", scn.name, ".png"),
+         width = 8, height = 6)
+}
+  
+
+
+
 
 
 ############ Execute outputs processing functions ############
 scn.name = "Test80"
 ageclass.spp(scn.name)
 defol.intens.phase(scn.name)
+area.defol(scn.name)

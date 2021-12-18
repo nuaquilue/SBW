@@ -95,8 +95,8 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)",
 
 
 ############ Run the biosim.map function for a single year ############
-year=2016; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
-for(year in 1997:2015)
+year=1996; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
+for(year in 1986:1996)
   biosim.maps(year, export.file, path)
 
 

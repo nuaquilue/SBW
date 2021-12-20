@@ -29,7 +29,7 @@ intens.def.curr = function(curr.outbreak, params, preoutbreak, outbreak, collaps
   }
   else if(outbreak>0 | preoutbreak>0){  ## or calm==0 ¿?
     active.defol$new.intens = ifelse(runif(nrow(active.defol),0,1)<0.75, active.defol$curr.intens.def,
-                                      intensity.defoliation(active.defol, params))
+                                      intensity.defoliation(active.defol, params, tbl))
     active.defol$new.intens[active.defol$new.intens==1 & active.defol$ny.def>1] = 
       sample(1:3, size=sum(active.defol$new.intens==1 & active.defol$ny.def>1), replace=T, prob=c(0.7,0.2,0.1))
   }

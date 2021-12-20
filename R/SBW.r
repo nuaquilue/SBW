@@ -1,4 +1,4 @@
-#' SBW: A package for simulating spruce budworm outbreaks dynamics in Quebec province
+#' SBW: A package for simulating spruce budworm outbreaks in Quebec province
 #' 
 #' The SBW package provides a set of functions to simulate four different phases of 
 #' spruce budworm outbreaks: pre-epidemic, epidemic, collapse, and calm, as well as the 

@@ -1,4 +1,4 @@
-intensity.defoliation = function(outbreak, params){
+intensity.defoliation = function(outbreak, params, tbl){
 
   ## Host predisposition according to species and age class
   breaks = c(0,30,60,999)
@@ -15,9 +15,9 @@ intensity.defoliation = function(outbreak, params){
   suboptimal = 0.5
   list.spp = levels(outbreak$spp)
   list.spp = list.spp[list.spp!="NonFor"]
-  load("data/temp.suitability.rda")
-  load("data/prec.suitability.rda")
-  load("data/soil.suitability.rda")
+  temp.suitability = tbl$temp.suitability
+  prec.suitability = tbl$prec.suitability
+  soil.suitability = tbl$soil.suitability
   dta = data.frame(cell.id=NA, spp=NA, site.qual=NA)
   for(ispp in list.spp){
     th.temp = filter(temp.suitability, spp==ispp)[-1]

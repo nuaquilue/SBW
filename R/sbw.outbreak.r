@@ -6,20 +6,20 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
   options(dplyr.summarise.inform=F)
   select = dplyr::select
   
-  ## Load required functions (no need in a R-package)
-  source("R/buffer.mig.r") 
-  source("R/default.params.r") 
-  source("R/forest.mortality.r") 
-  source("R/forest.transition.r")
-  source("R/intens.def.curr.r")  
-  source("R/intensity.defoliation.r")  
-  source("R/neigh.influence.sbw.spread.r")
-  source("R/spread.tonew.r")
-  source("R/suitability.r") 
-  
-  ## Load model data (no need in a R-package)
-  load(file="data/mask.rda")      # Raster mask of the study area
-  load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
+  # ## Load required functions (no need in a R-package)
+  # source("R/buffer.mig.r") 
+  # source("R/default.params.r") 
+  # source("R/forest.mortality.r") 
+  # source("R/forest.transition.r")
+  # source("R/intens.def.curr.r")  
+  # source("R/intensity.defoliation.r")  
+  # source("R/neigh.influence.sbw.spread.r")
+  # source("R/spread.tonew.r")
+  # source("R/suitability.r") 
+  # 
+  # ## Load model data (no need in a R-package)
+  # load(file="data/mask.rda")      # Raster mask of the study area
+  # load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
   
   
   ## Initializations and verifications  --------------------------------------------------------------------
@@ -45,7 +45,7 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
   }
   
   ## Get the list of default parameters and update user-initialized parameters
-  data(default.tables)
+  tbl = get("default.tables")
   if(!is.null(custom.tables)){
     # Check class of custom.tables
     if((!inherits(custom.tables, "list"))) {
@@ -95,15 +95,13 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
   }
   ## Load precipitation and temperature projections provided with the package according to the climatic scenario.
   if(is.na(prec.proj) & !is.na(rcp)){
-    # prec.proj = get(paste0("prec_", rcp))
-    load(file=paste0("data/prec_", rcp, "_MIROC_ESM_CHEM.rdata"))  
-    prec.proj = select(cc.prec, -x, -y)
+    prec.proj = get(paste0("prec_", rcp))
+    prec.proj = select(prec.proj, -x, -y)
     prec.chg = T
   }
   if(is.na(temp.proj) & !is.na(rcp)){   
-    # temp.proj = get(paste0("temp_", rcp))
-    load(file=paste0("data/temp_", rcp, "_MIROC_ESM_CHEM.rdata")) 
-    temp.proj = select(cc.temp, -x, -y)
+    temp.proj = get(paste0("temp_", rcp))
+    temp.proj = select(temp.proj, -x, -y)
     temp.chg = T
   }
   
@@ -347,13 +345,13 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
         initial.forest.comp = land$spp
         
         ## Environmental suitability:
-        suitab = suitability(land, params)
+        suitab = suitability(land, params, tbl)
 
         ## Regeneration after sbw outbreak
         if(length(kill.cells)>0){
           buffer = buffer.mig(land, kill.cells)
           land$spp[land$cell.id %in% kill.cells] = 
-            forest.transition(land, kill.cells, suitab, params, type.trans="O")
+            forest.transition(land, kill.cells, suitab, params, tbl, type.trans="O")
         }
 
         ## Natural succession of tree spp at every 40 years starting at Tcomp = 70
@@ -361,7 +359,7 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
         if(length(unlist(chg.comp.cells))>0){
           buffer = buffer.mig(land, unlist(chg.comp.cells))
           land$spp[land$cell.id %in% unlist(chg.comp.cells)] = 
-            forest.transition(land, unlist(chg.comp.cells), suitab, params, type.trans="S")
+            forest.transition(land, unlist(chg.comp.cells), suitab, params, tbl, type.trans="S")
         }
         
         ## For each cell that has changed composition (because of natural succession or regeneration of

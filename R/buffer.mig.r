@@ -5,6 +5,8 @@
 #' @param land A \code{landscape} data frame with forest stand records in rows
 #' @param target.cell.ids A vector of \code{cell.id} codes for those cells open for colonization, 
 #' and for which the presence of source populations nearby must be assessed
+#' @param tbl A list of default input tables as in \code{data(default.tables()} or 
+#' a customized list of input tables
 #'
 #' @return A data frame with the \code{cell.id} of the target cells and the presence (TRUE) or 
 #' absence (FALSE) of a sufficient number of source populations for each 
@@ -17,10 +19,10 @@
 #' buffer.mig(landscape, landscape$cell.id[runif(10,1,nrow(landscape))])
 #' 
 
-buffer.mig = function(land, target.cells.ids){  
+buffer.mig = function(land, target.cells.ids, tbl){  
   
-  ## Load model data (no need in a R-package)
-  load(file="data/spp.colonize.persist.rda")
+  ## Input table
+  spp.colonize.persist = tbl$spp.colonize.persist
   
   ## Coordinates of the target cells
   target.cells.ids.xy = land[land$cell.id %in% target.cells.ids, c("cell.id", "x", "y")]

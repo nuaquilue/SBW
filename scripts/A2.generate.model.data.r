@@ -20,27 +20,43 @@ spp.colonize.persist = read.table(paste0(input.path,"SppColonizePersist.txt"), h
 temp.suitability = read.table(paste0(input.path,"ThMeanTemp.txt"), header=T)  
 prec.suitability = read.table(paste0(input.path,"ThAnnualPrecip.txt"), header=T)  
 soil.suitability = read.table(paste0(input.path,"ThSoil.txt"), header=T)  
-tbl = list(post.sbw.reg=post.sbw.reg, forest.succ=forest.succ, 
+default.tables = list(post.sbw.reg=post.sbw.reg, forest.succ=forest.succ, 
            spp.colonize.persist=spp.colonize.persist, temp.suitability=temp.suitability,
            prec.suitability=prec.suitability, soil.suitability=soil.suitability)
-save(tbl, file = "data/default.tables.rda")
+usethis::use_data(default.tables, overwrite = T)
 
 
 ###### RASTER MASK: Rename raster of the study area, from MASK to mask
-input.path = "d:/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputlyrs/"
+input.path = "c:/work/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputlyrs/"
 load(paste0(input.path, "rdata/mask.rdata"))
 mask = MASK
-save(mask, file = "data/mask.rda")
+usethis::use_data(mask, overwrite = T)
+
+
+###### CLIMATE: Rename data frames with climatic projections
+input.path = "c:/work/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputlyrs/"
+load(paste0(input.path, "rdata/prec_rcp45_MIROC_ESM_CHEM.rdata"))
+prec_rcp45 = cc.prec
+usethis::use_data(prec_rcp45, overwrite = T)
+load(paste0(input.path, "rdata/prec_rcp85_MIROC_ESM_CHEM.rdata"))
+prec_rcp85 = cc.prec
+usethis::use_data(prec_rcp85, overwrite = T)
+load(paste0(input.path, "rdata/temp_rcp45_MIROC_ESM_CHEM.rdata"))
+temp_rcp45 = cc.temp
+usethis::use_data(temp_rcp45, overwrite = T)
+load(paste0(input.path, "rdata/temp_rcp85_MIROC_ESM_CHEM.rdata"))
+temp_rcp85 = cc.temp
+usethis::use_data(temp_rcp85, overwrite = T)
 
 
 ###### ELEVATION: Add elevation to 'land' data frame
 ## Read original 'land' and updated raster mask of the study area
-input.path = "d:/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputlyrs/"
+input.path = "c:/work/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputlyrs/"
 load(file = paste0(input.path, "rdata/land.rdata"))
 load(file = "data/mask.rda")
 
 ## Change projection of Elevation and clip it to the study area
-ELEV = raster(paste0(dirname(getwd()), "/DataIn/Elevation/elev_QC3.grd"))
+ELEV = raster(paste0(dirname(dirname(getwd())), "/DataIn/Elevation/elev_QC3.grd"))
 crs(ELEV)
 ELEVlcc = projectRaster(ELEV, res=2000, crs=crs(mask))
 ELEVlcc.clip = crop(ELEVlcc, mask)
@@ -65,7 +81,7 @@ land$temp = land$temp/10
 
 ## Now compute the accumulated intensity of defoliation, the number of years since the first defoliation,
 ## and the number of years without defoliation to reset defoliation once it is greater or equal than 5
-load(file=paste0(dirname(getwd()), "/DataOutSBW/sbw.defol.intens/SBW.intens.y.mask.rdata"))
+load(file=paste0(dirname(dirname(getwd())), "/DataOutSBW/sbw.defol.intens/SBW.intens.y.mask.rdata"))
 land$ny.def = 0 
 land$ny.def0 = 0
 land$cum.intens.def = 0
@@ -98,4 +114,4 @@ land = select(land, -intensity, -year)
 ## Rename 'land' to 'landscape' to be ready to use in sbw.outbreak() and
 ## save it in the 'data' folder.
 landscape = land
-save(landscape, file="data/land.sbw.rda")  # Forest and sbw outbreak data
+usethis::use_data(landscape, overwrite = T)  # Forest and sbw outbreak data

@@ -7,20 +7,21 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
   select = dplyr::select
   
   # ## Load required functions (no need in a R-package)
-  # source("R/buffer.mig.r") 
-  # source("R/default.params.r") 
-  # source("R/forest.mortality.r") 
-  # source("R/forest.transition.r")
-  # source("R/intens.def.curr.r")  
-  # source("R/intensity.defoliation.r")  
-  # source("R/neigh.influence.sbw.spread.r")
-  # source("R/spread.tonew.r")
-  # source("R/suitability.r") 
-  # 
-  # ## Load model data (no need in a R-package)
-  # load(file="data/mask.rda")      # Raster mask of the study area
-  # load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
-  
+  source("R/buffer.mig.r")
+  source("R/default.params.r")
+  source("R/forest.mortality.r")
+  source("R/forest.transition.r")
+  source("R/intens.def.curr.r")
+  source("R/intensity.defoliation.r")
+  source("R/neigh.influence.sbw.spread.r")
+  source("R/spread.tonew.r")
+  source("R/suitability.r")
+
+  ## Load model data (no need in a R-package)
+  load(file="data/mask.rda")      # Raster mask of the study area
+  load(file="data/landscape.rda")  # Forest and sbw outbreak data
+  load(file="data/default.tables.rda")  # Input tables of the model
+  tbls = default.tables; rm(default.tables)
   
   ## Initializations and verifications  --------------------------------------------------------------------
   cat("Data preparation ...\n") 
@@ -45,7 +46,7 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
   }
   
   ## Get the list of default parameters and update user-initialized parameters
-  tbl = get("default.tables")
+  # tbls = get("default.tables")  # in an R-package
   if(!is.null(custom.tables)){
     # Check class of custom.tables
     if((!inherits(custom.tables, "list"))) {
@@ -54,7 +55,7 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
     ## Check that the names of the customized parameters are correct
     if(!all(names(custom.tables) %in% names(tbl)))
       stop("Wrong custom tables names")
-    tbl = custom.tables
+    tbls = custom.tables
   }
 
   ## Set the directory for writing spatial outputs (if indicated) 
@@ -201,7 +202,8 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
           sample(0:3, size=length(sbw.new.sprd), replace=T, prob=c(0.2,0.4,0.3,0.1))
       }
-      else if(outbreak>0){
+      # else 
+      if(outbreak>0){
         cat("epidemic phase ", "\n")
         ## Spatial spreading of the current outbreak to cells not yet defoliated, that is,
         ## cells with ny.def0>=5 & tssbw>=30
@@ -216,7 +218,8 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
         land$curr.intens.def[land$cell.id %in% sbw.new.sprd] = 
           sample(0:2, size=length(sbw.new.sprd), replace=T, prob=c(0.1,0.8,0.1))
       }
-      else if(calm>0 | collapse==1){ 
+      #else 
+      if(calm>0 | collapse==1){ 
         cat("calm phase ", "\n")
         ## not add new locations to the current outbreak if it is collapsing
         ## when calm, few spontaneously cells will have to be here and there defoliated
@@ -243,7 +246,7 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
       curr.outbreak = filter(land, cell.id %in% sbw.curr.sprd)
       ## Level of defoliation of these cells. It can be 0 (no-defol), 1, 2 or 3!
       land$curr.intens.def[land$cell.id %in% sbw.curr.sprd] = 
-        intens.def.curr(filter(land, cell.id %in% sbw.curr.sprd), params, preoutbreak, outbreak, collapse, calm)
+        intens.def.curr(filter(land, cell.id %in% sbw.curr.sprd), params, tbls, preoutbreak, outbreak, collapse, calm)
       ## Update SBW tracking variables
       land$ny.def[land$cell.id %in% sbw.curr.sprd] = land$ny.def[land$cell.id %in% sbw.curr.sprd]+
         ifelse(land$curr.intens.def[land$cell.id %in% sbw.curr.sprd]==0, 0, 1)
@@ -345,21 +348,21 @@ sbw.outbreak = function(custom.params = NULL, custom.tables = NULL,
         initial.forest.comp = land$spp
         
         ## Environmental suitability:
-        suitab = suitability(land, params, tbl)
+        suitab = suitability(land, params, tbls)
 
         ## Regeneration after sbw outbreak
         if(length(kill.cells)>0){
-          buffer = buffer.mig(land, kill.cells)
+          buffer = buffer.mig(land, kill.cells, tbls)
           land$spp[land$cell.id %in% kill.cells] = 
-            forest.transition(land, kill.cells, suitab, params, tbl, type.trans="O")
+            forest.transition(land, kill.cells, suitab, params, tbls, type.trans="O")
         }
 
         ## Natural succession of tree spp at every 40 years starting at Tcomp = 70
         chg.comp.cells = filter(land, (age-age.matu) %in% seq(40,400,40) & tscomp>=70) %>% select(cell.id)
         if(length(unlist(chg.comp.cells))>0){
-          buffer = buffer.mig(land, unlist(chg.comp.cells))
+          buffer = buffer.mig(land, unlist(chg.comp.cells), tbls)
           land$spp[land$cell.id %in% unlist(chg.comp.cells)] = 
-            forest.transition(land, unlist(chg.comp.cells), suitab, params, tbl, type.trans="S")
+            forest.transition(land, unlist(chg.comp.cells), suitab, params, tbls, type.trans="S")
         }
         
         ## For each cell that has changed composition (because of natural succession or regeneration of

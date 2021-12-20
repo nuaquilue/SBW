@@ -4,12 +4,12 @@
 \alias{buffer.mig}
 \title{Buffer migration}
 \usage{
-buffer.mig(land, target.cells.ids, tbl)
+buffer.mig(land, target.cells.ids, tbls)
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records in rows}
 
-\item{tbl}{A list of default input tables as in \code{data(default.tables()} or 
+\item{tbls}{A list of default input tables as in \code{data(default.tables()} or 
 a customized list of input tables}
 
 \item{target.cell.ids}{A vector of \code{cell.id} codes for those cells open for colonization, 

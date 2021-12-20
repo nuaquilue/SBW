@@ -59,9 +59,3 @@ intens.def.curr = function(curr.outbreak, params, preoutbreak, outbreak, collaps
   
 }
 
-
-
-
-
-
-

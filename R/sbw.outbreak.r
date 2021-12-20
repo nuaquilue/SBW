@@ -1,6 +1,7 @@
-sbw.outbreak = function(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
-                        time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, 
-                        out.path = NA, ...){
+sbw.outbreak = function(custom.params = NULL, custom.tables = NULL, 
+                        rcp = NA, prec.proj = NA, temp.proj = NA,  
+                        time.horizon = 80, nrun = 1, 
+                        save.land = FALSE, out.seq = NA, out.path = NA){
   
   options(dplyr.summarise.inform=F)
   select = dplyr::select
@@ -19,14 +20,7 @@ sbw.outbreak = function(custom.params = NULL, rcp = NA, prec.proj = NA, temp.pro
   ## Load model data (no need in a R-package)
   load(file="data/mask.rda")      # Raster mask of the study area
   load(file="data/land.sbw.rda")  # Forest and sbw outbreak data
-  load(file="data/temp.suitability.rda")
-  load(file="data/prec.suitability.rda")
-  load(file="data/soil.suitability.rda")
-  load(file="data/spp.colonize.persist.rda")
-  load(file="data/post.sbw.reg.rda")
-  load(file="data/forest.succ.rda")
   
-  # cat(sum(soil.suitability[soil.suitability$spp=="SAB",2:6]), "\n")
   
   ## Initializations and verifications  --------------------------------------------------------------------
   cat("Data preparation ...\n") 
@@ -50,6 +44,19 @@ sbw.outbreak = function(custom.params = NULL, rcp = NA, prec.proj = NA, temp.pro
     params = custom.params
   }
   
+  ## Get the list of default parameters and update user-initialized parameters
+  data(default.tables)
+  if(!is.null(custom.tables)){
+    # Check class of custom.tables
+    if((!inherits(custom.tables, "list"))) {
+      stop("'custom.tables' must be a named list")
+    }
+    ## Check that the names of the customized parameters are correct
+    if(!all(names(custom.tables) %in% names(tbl)))
+      stop("Wrong custom tables names")
+    tbl = custom.tables
+  }
+
   ## Set the directory for writing spatial outputs (if indicated) 
   if(save.land){
     if(is.na(out.seq)){

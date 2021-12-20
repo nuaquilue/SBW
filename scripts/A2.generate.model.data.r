@@ -15,17 +15,15 @@ select = dplyr::select
 ###### TABLES
 input.path = "C:/WORK/OneDrive - ctfc.cat/QBCMOD/QbcLDM/inputfiles/"
 post.sbw.reg = read.table(paste0(input.path, "PostSBWRege.txt"), header=T)
-save(post.sbw.reg, file = "data/post.sbw.reg.rda")
 forest.succ = read.table(paste0(input.path,"ForestSucc.txt"), header=T)
-save(forest.succ, file = "data/forest.succ.rda")
 spp.colonize.persist = read.table(paste0(input.path,"SppColonizePersist.txt"), header=T)
-save(spp.colonize.persist, file = "data/spp.colonize.persist.rda")
 temp.suitability = read.table(paste0(input.path,"ThMeanTemp.txt"), header=T)  
-save(temp.suitability, file = "data/temp.suitability.rda")
 prec.suitability = read.table(paste0(input.path,"ThAnnualPrecip.txt"), header=T)  
-save(prec.suitability, file = "data/prec.suitability.rda")
 soil.suitability = read.table(paste0(input.path,"ThSoil.txt"), header=T)  
-save(soil.suitability, file = "data/soil.suitability.rda")
+tbl = list(post.sbw.reg=post.sbw.reg, forest.succ=forest.succ, 
+           spp.colonize.persist=spp.colonize.persist, temp.suitability=temp.suitability,
+           prec.suitability=prec.suitability, soil.suitability=soil.suitability)
+save(tbl, file = "data/default.tables.rda")
 
 
 ###### RASTER MASK: Rename raster of the study area, from MASK to mask

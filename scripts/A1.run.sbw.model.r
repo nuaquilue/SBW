@@ -28,26 +28,28 @@ library(raster)
 library(RANN)
 library(tidyverse)
 source("R/sbw.outbreak.r")  
-r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
-                 time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
 ## Saving outputs
-r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
-                 time.horizon = 2, nrun = 1, save.land = TRUE, out.seq = NA, 
-                 out.path = "outputs/algo") 
+r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
-## Changing default parameters of the list
+## Save outputs
+r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 2, nrun = 1, save.land = TRUE, out.seq = NA, out.path = "outputs/algo2") 
+
+## Change default parameters of the list
 source("R/default.params.r")  
 custom.params = default.params()
 custom.params$year.ini = 1990
-r = sbw.outbreak(custom.params = custom.params, rcp = NA, prec.proj = NA, temp.proj = NA,  
+r = sbw.outbreak(custom.params = custom.params, custom.tables = NULL, 
+                 rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 1, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
-## Changing values of a parameters table, eg. soil.suitability of SAB
-load("data/soil.suitability.rda")
+## Change values of an innput table, eg. soil.suitability of SAB
+data(default.tables)
+soil.suitability = tbl[["soil.suitability"]]
 soil.suitability[soil.suitability$spp=="SAB",2:6] = 0
-soil.suitability
-r = sbw.outbreak(custom.params = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
-                 time.horizon = 10, nrun = 1, save.land = FALSE, out.seq = NA, 
-                 out.path = NA, soil.suitability) 
+tbl[["soil.suitability"]] = soil.suitability
+r = sbw.outbreak(custom.params = NULL, custom.tables = tbl, rcp = NA, prec.proj = NA, temp.proj = NA,  
+                 time.horizon = 10, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 

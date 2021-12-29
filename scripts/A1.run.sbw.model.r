@@ -5,11 +5,12 @@ library(raster)
 library(RANN)
 library(tidyverse)
 ## sbw.outbreak() arguments
-custom.params = NA 
+custom.params = NULL
+custom.tables = NULL
 rcp = NA  #rcp = "rcp45" or = "rcp85"
 prec.proj = NA
 temp.proj = NA  
-time.horizon = 80
+time.horizon = 8
 nrun = 1
 save.land = FALSE
 out.seq = NA
@@ -29,11 +30,11 @@ library(RANN)
 library(tidyverse)
 source("R/sbw.outbreak.r")  
 
-## Saving outputs
+## 1 basic run
 r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
-## Save outputs
+ ## Save outputs
 r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 2, nrun = 1, save.land = TRUE, out.seq = NA, out.path = "outputs/algo2") 
 

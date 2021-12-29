@@ -41,7 +41,7 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)",
   }
   
   ## Raster map of the study area, Quebec province 
-  load(paste0(path, "SBW/data/mask.rda"))  
+  load(paste0(path, "SBW/SBW/data/mask.rda"))  
   # crs(mask)  # --> unfortunatelly, this projection is not supported by EPSG, 
   # neither the projections of the fire regime zones map
   
@@ -96,16 +96,21 @@ biosim.maps = function(year=2021, export.file = "Export (DegreeDay5)",
 
 ############ Run the biosim.map function for a single year ############
 year=1981; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
-for(year in 1983:1985)
+for(year in 1967)
   biosim.maps(year, export.file, path)
 
 
 ############ To restructurate some BioSIM outputs files ############
-year=2020; export.file = NULL; path="D:/OneDrive - ctfc.cat/QBCMOD/"
-prec = read.csv(paste0(path, "BioSIM/Quebec/Output/DegreeDay5.csv"))
-aux = group_by(prec, KeyID, Year, Month) %>% summarise(x=sum(Wind.Speed.at.10.meters.Highest.))
-names(aux)[4] = "Wind.Speed.at.10.meters.Highest"
-write.csv(aux, paste0(path, "BioSIM/Quebec/Output/Export (Analysis) max 2021.csv"), quote=F, row.names=F)
-#KeyID,Year,Month,Total Precipitation(Sum)
-
-
+# EXTRA COLUMS FROM 1977 TO 1967
+path="D:/OneDrive - ctfc.cat/QBCMOD/"
+for(year in 1967:1977){
+  prec = read.csv(paste0(path, "BioSIM/Quebec/Output/Export (Analysis) sum ", year, ".csv"))
+  prec = prec %>% select(-P)
+  write.csv(prec, file = paste0(path, "BioSIM/Quebec/Output/Export (Analysis) sum ", year, ".csv"), row.names=F, quote=F)
+  wind = read.csv(paste0(path, "BioSIM/Quebec/Output/Export (Analysis) max ", year, ".csv"))
+  wind = wind %>% select(-P)
+  write.csv(wind, file = paste0(path, "BioSIM/Quebec/Output/Export (Analysis) max ", year, ".csv"), row.names=F, quote=F)
+  tw = read.csv(paste0(path, "BioSIM/Quebec/Output/Export (Analysis) mean ", year, ".csv"))
+  tw = tw %>% select(-P)
+  write.csv(tw, file = paste0(path, "BioSIM/Quebec/Output/Export (Analysis) mean ", year, ".csv"), row.names=F, quote=F)
+}

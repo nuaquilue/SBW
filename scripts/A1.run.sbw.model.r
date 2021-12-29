@@ -34,7 +34,7 @@ source("R/sbw.outbreak.r")
 r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 80, nrun = 1, save.land = FALSE, out.seq = NA, out.path = NA) 
 
- ## Save outputs
+## Save outputs
 r = sbw.outbreak(custom.params = NULL, custom.tables = NULL, rcp = NA, prec.proj = NA, temp.proj = NA,  
                  time.horizon = 2, nrun = 1, save.land = TRUE, out.seq = NA, out.path = "outputs/algo2") 
 
